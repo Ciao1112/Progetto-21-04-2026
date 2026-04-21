@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="sileprogettocss.css">
 </head>
 <body>
-
     <div class="contenitore">
         <h1>Gare di Atletica</h1>
         
@@ -35,7 +34,7 @@
                 </div>
             </div>
 
-            <button type="button" onclick="salvaRisultato()">Salva e Calcola Finale</button>
+            <button type="button" onclick="salvaRisultato()">Salva</button>
         </form>
 
         <hr>
@@ -55,9 +54,52 @@
             <tbody id="corpoTabella">
                 </tbody>
         </table>
-        <button class="btn-clear" onclick="pulisciStorico()">Cancella Tutto lo Storico</button>
     </div>
+    <script>document.addEventListener('DOMContentLoaded', mostraDati);
 
-    <script></script>
+        function salvaRisultato() {
+            const atleta = document.getElementById('atleta').value;
+            const vortex = parseFloat(document.getElementById('vortex').value);
+            const staffetta = parseFloat(document.getElementById('staffetta').value);
+            const salto = parseFloat(document.getElementById('salto').value);
+            const velocita = parseFloat(document.getElementById('velocita').value);
+        
+            if (!atleta || isNaN(vortex)) return alert("Compila tutti i campi!");
+        
+            // Logica: Se la velocità (l'unica prova singola) è alta, va in finale
+            // Esempio: Se velocità > 8 o media tempi < 10 (personalizzabile)
+            let inFinale = (velocita > 7) ? "IN FINALE 🏆" : "Non qualificato";
+        
+            const nuovoDato = { atleta, vortex, staffetta, salto, velocita, inFinale };
+        
+            // Recupera vecchi dati o crea array vuoto
+            let storico = JSON.parse(localStorage.getItem('gareAtletica')) || [];
+            storico.push(nuovoDato);
+        
+            // Salva nel browser
+            localStorage.setItem('gareAtletica', JSON.stringify(storico));
+        
+            mostraDati();
+            document.getElementById('atleticaForm').reset();
+        }
+        
+        function mostraDati() {
+            const corpo = document.getElementById('corpoTabella');
+            corpo.innerHTML = "";
+            let storico = JSON.parse(localStorage.getItem('gareAtletica')) || [];
+        
+            storico.forEach(dato => {
+                let riga = `
+                    <tr class="${dato.inFinale.includes('FINALE') ? 'finale' : ''}">
+                        <td>${dato.atleta}</td>
+                        <td>${dato.vortex}s</td>
+                        <td>${dato.staffetta}s</td>
+                        <td>${dato.salto}s</td>
+                        <td>${dato.velocita}</td>
+                        <td>${dato.inFinale}</td>
+                    </tr>`;
+                corpo.innerHTML += riga;
+            });
+        }</script>
 </body>
 </html>
