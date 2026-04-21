@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+   
+    <title>Gestione Gare Atletica</title>
+    <link rel="stylesheet" href="sileprogettocss.css">
+</head>
+<body>
+
+    <div class="contenitore">
+        <h1>Gare di Atletica</h1>
+        
+        <form id="atleticaForm">
+            <div class="input-group">
+                <label>Nome Atleta:</label>
+                <input type="text" id="atleta" required>
+            </div>
+
+            <div class="input">
+                <div class="input-item">
+                    <label>Vortex (Tempo):</label>
+                    <input type="number" step="0.01" id="vortex" placeholder="sec" required>
+                </div>
+                <div class="input-item">
+                    <label>Staffetta (Tempo):</label>
+                    <input type="number" step="0.01" id="staffetta" placeholder="sec" required>
+                </div>
+                <div class="input-item">
+                    <label>Salto in Lungo (Tempo):</label>
+                    <input type="number" step="0.01" id="salto" placeholder="sec" required>
+                </div>
+                <div class="input-item">
+                    <label>Velocità (Misura):</label>
+                    <input type="number" step="0.01" id="velocita" placeholder="m/s o metri" required>
+                </div>
+            </div>
+
+            <button type="button" onclick="salvaRisultato()">Salva e Calcola Finale</button>
+        </form>
+
+        <hr>
+
+        <h2>Storico Risultati degli anni passati</h2>
+        <table id="tabellaRisultati">
+            <thead>
+                <tr>
+                    <th>Atleta</th>
+                    <th>Vortex</th>
+                    <th>Staffetta</th>
+                    <th>Salto</th>
+                    <th>Velocità</th>
+                    <th>Stato</th>
+                </tr>
+            </thead>
+            <tbody id="corpoTabella">
+                </tbody>
+        </table>
+        <button class="btn-clear" onclick="pulisciStorico()">Cancella Tutto lo Storico</button>
+    </div>
+
+    <script></script>
+</body>
+</html>
