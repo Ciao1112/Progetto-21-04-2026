@@ -6,14 +6,30 @@
     <link rel="stylesheet" href="sileprogettocss.css">
 </head>
 <body>
+
     <div class="contenitore">
         <h1>Gare di Atletica</h1>
         
         <form id="atleticaForm">
             <div class="input-group">
-                <label>Nome Atleta:</label>
-                <input type="text" id="atleta" required>
+                <div class="input-group">
+                    <label>Nome  e Congnome Atleta:</label>
+                    <input type="text" id="atleta" required>
+                </div>
+                <label>Scuola</label>
+                <input type="text" placeholder="elementari" required>
             </div>
+            <label class="input-group" for="scelta-sesso">Seleziona il sesso:</label>
+            <select id="scelta-sesso" name="sesso">
+              <option value="M">Maschio</option>
+              <option value="F">Femmina</option>
+              <option value="altro">Altro / Preferisco non specificare</option>
+            </select>
+            <div class="input-group">
+                <label>classe</label>
+                <input type="text" id="atleta" placeholder="classe">
+            </div>
+           
 
             <div class="input">
                 <div class="input-item">
@@ -55,8 +71,9 @@
                 </tbody>
         </table>
     </div>
-    <script>document.addEventListener('DOMContentLoaded', mostraDati);
-
+    <script>// Carica i dati salvati all'apertura della pagina
+        document.addEventListener('DOMContentLoaded', mostraDati);
+        
         function salvaRisultato() {
             const atleta = document.getElementById('atleta').value;
             const vortex = parseFloat(document.getElementById('vortex').value);
@@ -100,6 +117,13 @@
                     </tr>`;
                 corpo.innerHTML += riga;
             });
+        }
+        
+        function pulisciStorico() {
+            if(confirm("Vuoi cancellare tutti i dati degli anni passati?")) {
+                localStorage.removeItem('gareAtletica');
+                mostraDati();
+            }
         }</script>
 </body>
 </html>
