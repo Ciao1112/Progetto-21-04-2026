@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestione Gare Atletica Elementari</title>
+    <link rel="stylesheet" href="sileprogettocss.css">
+    <style>
+        /* Posizionamento Bottoni Gestione in alto a destra */
+        .nav-buttons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-buttons button {
+            padding: 8px 15px;
+            font-size: 0.85em;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            transition: opacity 0.3s;
+        }
+
+        .nav-buttons button:hover { opacity: 0.8; }
+
+        /* Stili per le tabelle e layout */
+        .contenitore { position: relative; max-width: 1000px; margin: auto; padding-top: 60px; }
+        .tabella-classifica { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.9em; }
+        .tabella-classifica th, .tabella-classifica td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        .tabella-classifica th { background-color: #2c3e50; color: white; }
+        .M { border-left: 5px solid #3498db; }
+        .F { border-left: 5px solid #e74c3c; }
+        h3 { color: #2c3e50; text-transform: uppercase; border-bottom: 2px solid #2c3e50; margin-top: 40px; }
+        h4 { margin-bottom: 5px; color: #7f8c8d; }
+        .input-item input { width: 70px; margin: 2px; }
+        
+        /* Colori bottoni gestione */
+        .btn-mostra { background: #27ae60; color: white; }
+        .btn-archivio { background: #8e44ad; color: white; }
+        .btn-reset { background: #e74c3c; color: white; }
+        
+        /* Bottone Salva (principale) */
+        .btn-salva { 
+            background: #2c3e50; color: white; padding: 12px 30px; 
+            font-size: 1.1em; width: 100%; margin-top: 20px; cursor: pointer;
+        }
+
+        #areaAnnoPrecedente { display: none; background: #f0f0f0; padding: 20px; border: 2px dashed #8e44ad; margin-top: 20px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- Bottoni di gestione spostati in alto a destra -->
+    <div class="nav-buttons">
+        <button type="button" class="btn-mostra" onclick="toggleAnnoPrecedente()">Vedi Anno Prec.</button>
+        <button type="button" class="btn-archivio" onclick="archiviaAnnoCorrente()">Archivia</button>
+        <button type="button" class="btn-reset" onclick="pulisciStorico()">Svuota Corrente</button>
+    </div>
+
+    <div class="contenitore">
+        <h1>Gare di Atletica - Elementari</h1>
+        
+        <form id="atleticaForm">
+            <div class="input-group">
+                <label>Nome e Cognome Atleta:</label>
+                <input type="text" id="atleta" required>
+            </div>
+
+            <div class="input-group">
+                <label>Sesso:</label>
+                <select id="sesso" required>
+                    <option value="M">Maschio</option>
+                    <option value="F">Femmina</option>
+                </select>
+                
+                <label>Classe:</label>
+                <select id="classe" required>
+                    <option value="1E">1ª Elementare</option>
+                    <option value="2E">2ª Elementare</option>
+                    <option value="3E">3ª Elementare</option>
+                    <option value="4E">4ª Elementare</option>
+                    <option value="5E">5ª Elementare</option>
+                </select>
+            </div>
+
+            <div class="input">
+                <div class="input-item">
+                    <label>Vortex (3 prove - m):</label><br>
+                    <input type="number" step="0.01" id="vortex1" placeholder="Pr 1">
+                    <input type="number" step="0.01" id="vortex2" placeholder="Pr 2">
+                    <input type="number" step="0.01" id="vortex3" placeholder="Pr 3">
+                </div>
+                
+                <div class="input-item">
+                    <label>Salto in Lungo (3 prove - m):</label><br>
+                    <input type="number" step="0.01" id="salto1" placeholder="Pr 1">
+                    <input type="number" step="0.01" id="salto2" placeholder="Pr 2">
+                    <input type="number" step="0.01" id="salto3" placeholder="Pr 3">
+                </div>
+
+                <div class="input-item">
+                    <label>Staffetta (1 prova - sec):</label><br>
+                    <input type="number" step="0.01" id="staffetta" placeholder="sec" required style="width: 150px;">
+                </div>
+
+                <div class="input-item">
+                    <label>Velocità (1 prova - sec):</label><br>
+                    <input type="number" step="0.01" id="velocita" placeholder="sec" required style="width: 150px;">
+                </div>
+            </div>
+
+            <button type="button" class="btn-salva" onclick="salvaRisultato()">SALVA E AGGIORNA CLASSIFICHE</button>
+        </form>
+
+        <hr>
+        <div id="areaClassifiche"></div>
+
+        <div id="areaAnnoPrecedente">
+            <h2 style="color: #8e44ad; text-align: center;">--- ARCHIVIO ANNO PRECEDENTE ---</h2>
+            <div id="contenutoAnnoPrecedente"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => mostraClassifiche());
+
+        function getGruppoClasse(classe) {
+            if (classe === '1E' || classe === '2E') return "1ª e 2ª ELEMENTARE";
+            if (classe === '3E') return "3ª ELEMENTARE";
+            if (classe === '4E' || classe === '5E') return "4ª e 5ª ELEMENTARE";
+            return "Altro";
+        }
+
+        function salvaRisultato() {
+            const atleta = document.getElementById('atleta').value;
+            const sesso = document.getElementById('sesso').value;
+            const classe = document.getElementById('classe').value;
+
+            const vortex = Math.max(
+                parseFloat(document.getElementById('vortex1').value || 0),
+                parseFloat(document.getElementById('vortex2').value || 0),
+                parseFloat(document.getElementById('vortex3').value || 0)
+            );
+            const salto = Math.max(
+                parseFloat(document.getElementById('salto1').value || 0),
+                parseFloat(document.getElementById('salto2').value || 0),
+                parseFloat(document.getElementById('salto3').value || 0)
+            );
+            
+            const staffetta = parseFloat(document.getElementById('staffetta').value);
+            const velocita = parseFloat(document.getElementById('velocita').value);
+
+            if (!atleta || isNaN(staffetta) || isNaN(velocita)) {
+                return alert("Dati mancanti! Inserisci almeno nome, staffetta e velocità.");
+            }
+
+            const nuovoDato = { atleta, sesso, classe, vortex, staffetta, salto, velocita, gruppo: getGruppoClasse(classe) };
+            let storico = JSON.parse(localStorage.getItem('atleticaElem')) || [];
+            storico.push(nuovoDato);
+            localStorage.setItem('atleticaElem', JSON.stringify(storico));
+
+            document.getElementById('atleticaForm').reset();
+            mostraClassifiche();
+        }
+
+        function mostraClassifiche(isOld = false) {
+            const storageKey = isOld ? 'atleticaElem_Old' : 'atleticaElem';
+            const areaId = isOld ? 'contenutoAnnoPrecedente' : 'areaClassifiche';
+            const area = document.getElementById(areaId);
+            
+            area.innerHTML = "";
+            let storico = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+            if (isOld && storico.length === 0) {
+                area.innerHTML = "<p style='text-align:center;'>Nessun dato archiviato.</p>";
+                return;
+            }
+
+            const gruppi = ["1ª e 2ª ELEMENTARE", "3ª ELEMENTARE", "4ª e 5ª ELEMENTARE"];
+            const discipline = [
+                { id: 'vortex', nome: 'Vortex (m)', ord: 'desc' },
+                { id: 'salto', nome: 'Salto in Lungo (m)', ord: 'desc' },
+                { id: 'staffetta', nome: 'Staffetta (s)', ord: 'asc' },
+                { id: 'velocita', nome: 'Velocità (s)', ord: 'asc' }
+            ];
+
+            gruppi.forEach(g => {
+                let datiGruppo = storico.filter(d => d.gruppo === g);
+                if (datiGruppo.length === 0) return;
+
+                area.innerHTML += `<h3>${g}</h3>`;
+                discipline.forEach(disc => {
+                    area.innerHTML += `<h4>Classifica ${disc.nome}</h4>`;
+                    ['M', 'F'].forEach(sex => {
+                        let filtrati = datiGruppo.filter(d => d.sesso === sex);
+                        filtrati.sort((a, b) => disc.ord === 'asc' ? a[disc.id] - b[disc.id] : b[disc.id] - a[disc.id]);
+                        if (filtrati.length > 0) {
+                            let table = `<table class="tabella-classifica ${sex}"><thead><tr><th>Pos</th><th>Atleta</th><th>Classe</th><th>Risultato</th></tr></thead><tbody>`;
+                            filtrati.forEach((atleta, i) => {
+                                table += `<tr><td>${i+1}°</td><td>${atleta.atleta}</td><td>${atleta.classe}</td><td>${atleta[disc.id].toFixed(2)}</td></tr>`;
+                            });
+                            table += `</tbody></table>`;
+                            area.innerHTML += table;
+                        }
+                    });
+                });
+            });
+        }
+
+        function toggleAnnoPrecedente() {
+            const area = document.getElementById('areaAnnoPrecedente');
+            area.style.display = (area.style.display === "none" || area.style.display === "") ? "block" : "none";
+            if (area.style.display === "block") mostraClassifiche(true);
+        }
+
+        function archiviaAnnoCorrente() {
+            const corrente = localStorage.getItem('atleticaElem');
+            if (corrente && confirm("Vuoi archiviare l'anno corrente? L'archivio precedente verrà sovrascritto.")) {
+                localStorage.setItem('atleticaElem_Old', corrente);
+                alert("Archiviato con successo!");
+            }
+        }
+
+        function pulisciStorico() {
+            if(confirm("Attenzione: vuoi svuotare TUTTI i dati dell'anno corrente?")) {
+                localStorage.removeItem('atleticaElem');
+                mostraClassifiche();
+            }
+        }
+    </script>
+</body>
+</html>
